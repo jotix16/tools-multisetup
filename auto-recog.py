@@ -6,10 +6,10 @@ from argparse import ArgumentParser
 import re
 # from lib.utils import * #??
 from tools import *
+from i6lib.sge import notOnCluster
 import shutil
 from glob import glob
 from subprocess import check_call, CalledProcessError
-from i6lib.sge import notOnCluster
 from pprint import pprint
 
 

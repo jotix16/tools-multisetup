@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # kate: space-indent on; indent-width 4; mixedindent off; indent-mode python;
 
-from lib.ui import *
-from lib.utils import *
+from lib.ui import seriousConfirm
+from lib.utils import human_size
 from tools import *
 import re
 import os

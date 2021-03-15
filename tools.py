@@ -3,11 +3,11 @@ import sys
 import os
 import re
 import typing
-from i6lib.sge import getCurrentJobsMoreInfo
 import numpy
 import h5py
 from subprocess import Popen, PIPE
 from termcolor import colored
+from i6lib.sge import getCurrentJobsMoreInfo
 from i6lib.str_ import get_str
 from lib.utils import parse_time, repr_time_mins, avoid_wiki_link
 from pprint import pprint

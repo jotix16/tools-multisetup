@@ -19,7 +19,7 @@ Note that there is also returnn/tools/cleanup-old-models.py, which does not dele
 
 import argparse
 from glob import glob
-from lib.utils import *
+from lib.utils import human_size
 from tools import *
 import sys
 import os

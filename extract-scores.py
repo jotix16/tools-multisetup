@@ -3,7 +3,7 @@
 
 from argparse import ArgumentParser
 import re
-from lib.utils import *
+from lib.utils import sysexecOut, sysexec, ShellError, betterRepr
 from tools import *
 import shutil
 from glob import glob
@@ -93,8 +93,6 @@ def collect_train_stats(full_dir, args):
         gpus = [re.search("gpu device [0-9]+: ([A-Za-z0-9 ]*)", s).group(1).strip() for s in gpu_str_lines]
         if len(gpus) == 1:
             gpu = gpus[0]
-        elif len(set(gpus)) == 1:
-            gpu = "%i * %s" % (len(gpus), gpus[0])
         else:
             gpu = " + ".join(gpus)
         try:
@@ -178,14 +176,14 @@ def main():
     parser.add_argument('--delete_extracted_recog_dirs', action='store_true')
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
- 
+
     if args.train_setup:
         print("Collect train setup %r" % args.train_setup)
         assert os.path.exists("%s/data-train/%s" % (base_dir, args.train_setup))
         args.verbose = True
         collect_train(setup=args.train_setup, args=args)
         return
- 
+
     # collect train data
     print("Collect train data...")
 
