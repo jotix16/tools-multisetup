@@ -126,7 +126,7 @@ def plot_runtime_vs_wer_to_file(models_by_time, filename, opts):
 
     ax.set(
         xlabel='Time [days]', ylabel='%s [%%]' % Settings.recog_metric_name.upper(),
-        title='Training runtime (%s) vs %s' % (reference_gpu, Settings.recog_metric_name.upper()))
+        title='Training runtime (%s) vs %s' % (Settings.reference_gpu, Settings.recog_metric_name.upper()))
     ax.grid()
 
     fig.savefig(filename)
