@@ -4,7 +4,9 @@ from __future__ import division
 
 from argparse import ArgumentParser
 from tools import *
-
+"""
+Allows you to collect time related information about trained models and maybe plot runtime vs wer.
+"""
 
 def plot_runtime_vs_wer_to_file(models_by_time, filename, opts):
     """
@@ -163,7 +165,7 @@ def main():
     if args.plot_runtime_vs_wer:
         plot_runtime_vs_wer_to_file(
             models_by_time=stats.models_by_time,
-            filename=args.plot_runtime_vs_we,
+            filename=args.plot_runtime_vs_wer,
             opts=eval("dict(%s)" % args.plot_runtime_vs_wer_opts))
         sys.exit(0)
 

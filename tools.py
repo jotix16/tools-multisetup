@@ -15,7 +15,10 @@ from pprint import pprint
 from lazy_object_proxy import Proxy as lazy  # pip install...
 # noinspection PyCompatibility
 import faulthandler
-
+"""
+get_recog_setups   <- find_recog_jobs <- current_jobs <- getCurrentJobsMoreInfo <- sge
+get_train_setups   <- find_train_jobs <- current_jobs <- getCurrentJobsMoreInfo <- sge
+"""
 
 faulthandler.enable()
 
@@ -431,7 +434,7 @@ def read_multisetup_info_from_config(configfile):
 
 
 def train_setup_info_via_config(configfile):
-    """
+    """ Finds out if experiment for config file has alreaady finished, completed and reason.
     :param str configfile:
     :rtype: dict[str]
     """
@@ -637,9 +640,9 @@ def get_base_model(modelname):
 
 _PossibleTrainKeyPrefixes = {"train_score", "train_error", "dev_score", "dev_error", "devtrain_score", "devtrain_error"}
 
-
 def get_train_scores(train_scores_file, fixup_keys=True):
-    """
+    """ Extract ep, key, score from lines like:  `epoch   1 dev_score: 87.01599501758359`
+        and return dict[key,list[(value, ep)]]
     :param str train_scores_file: "scores/*.train.info.txt"
     :param bool fixup_keys:
     :return: dict key -> list[(score, ep)]
@@ -655,7 +658,7 @@ def get_train_scores(train_scores_file, fixup_keys=True):
         prefix = None
         for prefix_ in _PossibleTrainKeyPrefixes:
             if key.startswith(prefix_):
-                assert not prefix  # must be unique
+                assert not prefix  # must be unique, doesnt make sense
                 prefix = prefix_
         if not prefix:
             continue
@@ -747,7 +750,6 @@ def get_train_key_fixup_mappings(train_scores, apply_fixup=False):
 
 DefaultKey = "dev_error"
 
-
 def get_train_scores_by_key(train_scores_file, key=DefaultKey, ignore_key=None,
                             max_epoch=float("inf"), filter_not_reached_max_epoch=False):
     """
@@ -764,7 +766,7 @@ def get_train_scores_by_key(train_scores_file, key=DefaultKey, ignore_key=None,
     if key in fixup_mappings:
         key = fixup_mappings[key]
     ls = []
-    for k, v in sorted(train_scores.items()):
+    for k, v in sorted(train_scores.items()): # k: key, v: list[(score, ep)]
         if ignore_key and ignore_key in k:
             continue
         if not k.startswith(key):
@@ -788,7 +790,7 @@ def get_best_train_score(train_scores_file, **kwargs):
     train_scores = get_train_scores_by_key(train_scores_file, **kwargs)
     if not train_scores:
         return None
-    return min(train_scores)
+    return min(train_scores) # sorted by score as it is a list of [(score,ep)]
 
 
 class CollectStats:

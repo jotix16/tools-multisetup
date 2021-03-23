@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-
+"""
+Motivation: Used to mark a setup config as finished with a comment # multistep: $reason
+Usage:		$python mark-finished-train.py $train_setup $reason
+"""
 import better_exchook
 import os
 import sys

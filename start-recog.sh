@@ -1,5 +1,10 @@
 #!/bin/bash
-
+# Usage:         ./start-recog.sh $model $epoch
+# Motivation:    1) It makes sure that
+#                    - /data-train/model/ exists
+#                    - there is a valid checkpoint in /data-train/experiment/net-model
+#                    - and recog_dir/model/ is created.
+#                2) Calls qint.py recog.q.sh -g 3 (-g 3 guarded with 3 tries) from recog_dir/model/
 set -e
 
 model=$1

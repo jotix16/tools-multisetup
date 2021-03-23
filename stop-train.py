@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-
+# kate: space-indent on; indent-width 4; mixedindent off; indent-mode python;
+"""
+Usage:      python stop-train.py $experiment
+Motivation: Calls qdel after finding the jobid for the $experiment.
+"""
 import sys
 from argparse import ArgumentParser
 from tools import *
@@ -23,4 +27,3 @@ print(" ".join(cmd))
 check_call(cmd)
 
 
-# kate: space-indent on; indent-width 4; mixedindent off; indent-mode python;

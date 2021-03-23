@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 """
-Reads in scores, tries to fit them to some simple model.
+Reads in scores, tries to fit them to some simple model(Input: step, Output: score).
+Usage:  python tools-multisetup/score-regression.py --score_file  scores/original.train.info.txt --score_key train_score
 """
 
 
@@ -10,7 +11,6 @@ import argparse
 import re
 import time
 from typing import Dict
-import tensorflow as tf
 import numpy
 import better_exchook
 
@@ -128,8 +128,9 @@ class LivePlot:
         ax.set_xlim(x_min, x_max)
         ax.set_ylim(y_min, y_max)
 
-        plt.show(False)
+        plt.show(block=False)
         plt.draw()
+
 
         # cache the background
         # self._background = fig.canvas.copy_from_bbox(ax.bbox)
@@ -165,92 +166,97 @@ class LivePlot:
         plt.pause(0.0001)
 
 
-def _positive(x):
-    """
-    :param tf.Tensor x:
-    :rtype: tf.Tensor
-    """
-    return tf.abs(x)
-
-
-def exp_model(x):
-    """
-    :param tf.Tensor x:
-    :rtype: tf.Tensor
-    """
-    with tf.variable_scope("exp_model"):
-        a = tf.get_variable(name="a", shape=(), initializer=tf.constant_initializer(1.0))
-        scale = tf.get_variable(name="scale", shape=(), initializer=tf.constant_initializer(1.0))
-        return tf.exp(-x * a) * _positive(scale)
-
-
-def exp_exp_model(x):
-    """
-    :param tf.Tensor x:
-    :rtype: tf.Tensor
-    """
-    with tf.variable_scope("exp_exp_model"):
-        a = tf.get_variable(name="a", shape=(), initializer=tf.constant_initializer(1.0))
-        b = tf.get_variable(name="b", shape=(), initializer=tf.constant_initializer(1.0))
-        scale = tf.get_variable(name="scale", shape=(), initializer=tf.constant_initializer(1.0))
-        return tf.exp(tf.exp(-x * a) * b) * _positive(scale)
-
-
-def sigmoid_model(x):
-    """
-    :param tf.Tensor x:
-    :rtype: tf.Tensor
-    """
-    with tf.variable_scope("sigmoid_model"):
-        a = tf.get_variable(name="a", shape=(), initializer=tf.constant_initializer(1.0))
-        b = tf.get_variable(name="b", shape=(), initializer=tf.constant_initializer(0.0))
-        c = tf.get_variable(name="c", shape=(), initializer=tf.constant_initializer(1.0))
-        d = tf.get_variable(name="d", shape=(), initializer=tf.constant_initializer(1.0))
-        scale = tf.get_variable(name="scale", shape=(), initializer=tf.constant_initializer(1.0))
-        return tf.sigmoid(a - b * x - tf.sqrt(_positive(x * c + d))) * _positive(scale)
-
-
-def log_model(x):
-    """
-    :param tf.Tensor x:
-    :rtype: tf.Tensor
-    """
-    with tf.variable_scope("log_model"):
-        a = tf.get_variable(name="a", shape=(), initializer=tf.constant_initializer(1.0))
-        b = tf.get_variable(name="b", shape=(), initializer=tf.constant_initializer(0.0))
-        scale = tf.get_variable(name="scale", shape=(), initializer=tf.constant_initializer(1.0))
-        return -tf.log(_positive(x * a + b + 1.0)) * _positive(scale)
-
-
-def log_log_model(x):
-    """
-    :param tf.Tensor x:
-    :rtype: tf.Tensor
-    """
-    with tf.variable_scope("log_log_model"):
-        a = tf.get_variable(name="a", shape=(), initializer=tf.constant_initializer(1.0))
-        b = tf.get_variable(name="b", shape=(), initializer=tf.constant_initializer(0.0))
-        c = tf.get_variable(name="c", shape=(), initializer=tf.constant_initializer(1.0))
-        d = tf.get_variable(name="d", shape=(), initializer=tf.constant_initializer(0.0))
-        scale = tf.get_variable(name="scale", shape=(), initializer=tf.constant_initializer(1.0))
-        return -tf.log(_positive(-tf.log(_positive(x * a + b) + 1.0) * c + d)) * _positive(scale)
-
-
-def neural_model(x):
-    """
-    :param tf.Tensor x:
-    :rtype: tf.Tensor
-    """
-    with tf.variable_scope("neural_model"):
-        y = tf.expand_dims(x, axis=1)  # (batch,dim)
-        y = tf.keras.layers.Dense(name="l1", activation=tf.nn.relu, units=3)(y)
-        y = tf.keras.layers.Dense(name="l2", activation=tf.nn.relu, units=3)(y)
-        y = tf.keras.layers.Dense(name="l3", activation=tf.nn.relu, units=3)(y)
-        w = tf.get_variable(name="w", shape=(y.shape[-1].value,), initializer=tf.glorot_uniform_initializer())
-        return tf.reduce_sum(w * y, axis=1)
 
 
 def model(x, bias_init=0.0):
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+
+    def _positive(x):
+        """
+        :param tf.Tensor x:
+        :rtype: tf.Tensor
+        """
+        return tf.abs(x)
+
+
+    def exp_model(x):
+        """
+        :param tf.Tensor x:
+        :rtype: tf.Tensor
+        """
+        with tf.variable_scope("exp_model"):
+            a = tf.get_variable(name="a", shape=(), initializer=tf.constant_initializer(1.0))
+            scale = tf.get_variable(name="scale", shape=(), initializer=tf.constant_initializer(1.0))
+            return tf.exp(-x * a) * _positive(scale)
+
+
+    def exp_exp_model(x):
+        """
+        :param tf.Tensor x:
+        :rtype: tf.Tensor
+        """
+        with tf.variable_scope("exp_exp_model"):
+            a = tf.get_variable(name="a", shape=(), initializer=tf.constant_initializer(1.0))
+            b = tf.get_variable(name="b", shape=(), initializer=tf.constant_initializer(1.0))
+            scale = tf.get_variable(name="scale", shape=(), initializer=tf.constant_initializer(1.0))
+            return tf.exp(tf.exp(-x * a) * b) * _positive(scale)
+
+
+    def sigmoid_model(x):
+        """
+        :param tf.Tensor x:
+        :rtype: tf.Tensor
+        """
+        with tf.variable_scope("sigmoid_model"):
+            a = tf.get_variable(name="a", shape=(), initializer=tf.constant_initializer(1.0))
+            b = tf.get_variable(name="b", shape=(), initializer=tf.constant_initializer(0.0))
+            c = tf.get_variable(name="c", shape=(), initializer=tf.constant_initializer(1.0))
+            d = tf.get_variable(name="d", shape=(), initializer=tf.constant_initializer(1.0))
+            scale = tf.get_variable(name="scale", shape=(), initializer=tf.constant_initializer(1.0))
+            return tf.sigmoid(a - b * x - tf.sqrt(_positive(x * c + d))) * _positive(scale)
+
+
+    def log_model(x):
+        """
+        :param tf.Tensor x:
+        :rtype: tf.Tensor
+        """
+        with tf.variable_scope("log_model"):
+            a = tf.get_variable(name="a", shape=(), initializer=tf.constant_initializer(1.0))
+            b = tf.get_variable(name="b", shape=(), initializer=tf.constant_initializer(0.0))
+            scale = tf.get_variable(name="scale", shape=(), initializer=tf.constant_initializer(1.0))
+            return -tf.log(_positive(x * a + b + 1.0)) * _positive(scale)
+
+
+    def log_log_model(x):
+        """
+        :param tf.Tensor x:
+        :rtype: tf.Tensor
+        """
+        with tf.variable_scope("log_log_model"):
+            a = tf.get_variable(name="a", shape=(), initializer=tf.constant_initializer(1.0))
+            b = tf.get_variable(name="b", shape=(), initializer=tf.constant_initializer(0.0))
+            c = tf.get_variable(name="c", shape=(), initializer=tf.constant_initializer(1.0))
+            d = tf.get_variable(name="d", shape=(), initializer=tf.constant_initializer(0.0))
+            scale = tf.get_variable(name="scale", shape=(), initializer=tf.constant_initializer(1.0))
+            return -tf.log(_positive(-tf.log(_positive(x * a + b) + 1.0) * c + d)) * _positive(scale)
+
+
+    def neural_model(x):
+        """
+        :param tf.Tensor x:
+        :rtype: tf.Tensor
+        """
+        with tf.variable_scope("neural_model"):
+            y = tf.expand_dims(x, axis=1)  # (batch,dim)
+            y = tf.keras.layers.Dense(name="l1", activation=tf.nn.relu, units=3)(y)
+            y = tf.keras.layers.Dense(name="l2", activation=tf.nn.relu, units=3)(y)
+            y = tf.keras.layers.Dense(name="l3", activation=tf.nn.relu, units=3)(y)
+            w = tf.get_variable(name="w", shape=(y.shape[-1].value,), initializer=tf.glorot_uniform_initializer())
+            return tf.reduce_sum(w * y, axis=1)
+
+
     """
     :param tf.Tensor x: (batch,)
     :param float bias_init:
@@ -269,6 +275,8 @@ def model(x, bias_init=0.0):
 
 
 def fit(scores, max_num_steps=float("inf"), verbose=True, plot=None):
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
     """
     :param dict[int,float] scores:
     :param int|float max_num_steps:
@@ -332,7 +340,6 @@ def main():
     arg_parser.add_argument("--score_file")
     arg_parser.add_argument("--score_key")
     arg_parser.add_argument("--sort_scores", action="store_true")
-    arg_parser.add_argument("--point_cloud", action="store_true")
     arg_parser.add_argument("--no_fit", action="store_true")
     args = arg_parser.parse_args()
     if bool(args.score_dir) == bool(args.score_file):
@@ -340,15 +347,15 @@ def main():
         arg_parser.print_usage()
         sys.exit(1)
     if args.score_file:
+        # 1.Parse
         scores = parse_score_file(filename=args.score_file, score_key=args.score_key)
-        if args.point_cloud:
-            pass
         if args.sort_scores:
             scores_values = numpy.array(list(scores.values()))
             assert scores_values.shape == (len(scores),)
+            # 2.Sort
             scores_values.sort()
-            # scores_values = numpy.flip(scores_values, 0)
             scores = {i: x for (i, x) in enumerate(scores_values)}
+        # 3.Plot
         plot = LivePlot(scores=scores)
         try:
             if args.no_fit:
@@ -356,6 +363,7 @@ def main():
                     plot.draw()
             else:
                 try:
+                    # 4.Fit
                     fit(scores, plot=plot)
                 except KeyboardInterrupt:
                     print("Got KeyboardInterrupt. Press again to quit.")

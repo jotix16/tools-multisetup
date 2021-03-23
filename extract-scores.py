@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # kate: space-indent on; indent-width 4; mixedindent off; indent-mode python;
-
+"""
+collect scores from data-train and data-recog, saves it in scores/$model.train.info.txt and logs-archive/*
+"""
 from argparse import ArgumentParser
 import re
+import os
 from lib.utils import sysexecOut, sysexec, ShellError, betterRepr
 from tools import *
 import shutil
@@ -141,12 +144,15 @@ def collect_train(setup, args):
     """
     fullfn = "%s/data-train/%s" % (base_dir, setup)
     if not os.path.isdir(fullfn):
+        print(fullfn, "not found!")
         return
     newbobfile = "%s/newbob.data" % fullfn
     if not os.path.exists(newbobfile):
+        print(newbobfile, "not found!")
         return
     newbob_data = open(newbobfile).read()
     if not newbob_data:
+        print(newbobfile, "was empty!")
         return  # disk full while writing... very sad...
     #newbob_data = hackUnicodePy2Literals(newbob_data)
     try:
@@ -186,15 +192,12 @@ def main():
 
     # collect train data
     print("Collect train data...")
-
     for f in sorted(os.listdir("%s/data-train" % base_dir)):
         collect_train(setup=f, args=args)
 
     # collect recog data
     print("Collect recog data...")
-
     setups = {}  # dict[str,dict[str,str]], setup -> epoch -> wer
-
     finished_recog_setups = []
 
     for f in sorted(os.listdir("%s/data-recog" % base_dir)):

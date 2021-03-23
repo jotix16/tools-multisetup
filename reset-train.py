@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-
+"""
+Uses:       stop-train.py
+Usage:      python reset-train.py $experiment
+Motivation: Stops training for $experiment, deletes data-train/$experiment
+            and removes the corresponding files in scores/* and logs-archive/*.
+"""
 from lib.utils import shellcmd
 from lib import ui
 from tools import *

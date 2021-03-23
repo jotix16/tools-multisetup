@@ -3,9 +3,44 @@
 import sys, os, re
 from argparse import ArgumentParser
 from pprint import pprint
-from tools import *
+# from tools import *
+from tools import get_train_scores, get_best_train_score, DefaultKey # DefaultKey=dev_error
+
+"""
+It extracts score information from score files that look like:
+```
+    epoch  nr    key:               score
+    ..
+    epoch  19  dev_score:      13.912123100569778
+    ..
+    epoch  19  dev_score:      13.912123100569778
+    epoch  20  dev_score:      13.490933255434813
+    epoch   1  devtrain_score: 95.75607315918167
+    ..
+```
+If we specify a score file it prints information about all possible score_types.
+Score_type is the name of the dataset part the score is calculated on.
+Otherwise it gives information about the score type given by --key for all score files.
+The score type is given as --key score_type with possible values:
+    {"train_score", "train_error", "dev_score", "dev_error", "devtrain_score", "devtrain_error"}
 
 
+1.) with "train_scores_file" argument
+                -> train_scores_file  # score_info file in scores/*.train.info.txt with lines like: ``epoch  19 dev_score: 13.912123100569778``
+    Usage:
+    $get-best-train-info-scores.py scores/experiment.train.info.txt
+
+2.) no "train_scores_file" argument, it checks all files in scores/*.train.info.txt
+    Usage:
+    $get-best-train-info-scores.py
+        --key                            # key, eg.g dev_score for which we want to find best score(default: dev_error)
+        --ignore_key                     # ignore specified key
+        --max_epoch                      # consider only scores smaller than max_epoch
+        --filter_not_reached_max_epoch   # Filter out keys that have not yet reached max_epoch
+        --prefix                         # experiment/model name, if we want to check only one model
+        --ref_setup                      # --- hmm???
+        --ref_setup_dist                 # levenstein distance we allow the ref_setup from setup_name to differ
+"""
 # A fast and memory efficient implementation
 # by Hjelmqvist, Sten
 # https://davejingtian.org/2015/05/02/python-levenshtein-distance-choose-python-package-wisely/
@@ -119,7 +154,7 @@ def get_max_epoch(setup_name):
 
 
 def get_setups_with_best_train_score(prefix=None, ref_setup=None, ref_setup_dist=1, **kwargs):
-    """
+    """ Get the list of best (score, setup_name, ep) for all files in scores/*.train.info.txt
     :param str|None prefix:
     :param str|None ref_setup:
     :param int ref_setup_dist:
@@ -144,28 +179,6 @@ def get_setups_with_best_train_score(prefix=None, ref_setup=None, ref_setup_dist
     return ls
 
 
-def get_setups_with_best_score_by_epoch(ref_setup=None, ref_setup_dist=1, **kwargs):
-    """
-    :param str|None ref_setup:
-    :param int ref_setup_dist:
-    :param kwargs: passed to get_train_scores_by_key
-    :return: list[(score, setup_name, ep)]
-    :rtype: list[(float,str,int)]
-    """
-    from glob import glob
-    d = {}  # ep -> list[(score,setup)]
-    for fn in glob("scores/*.train.info.txt"):
-        setup_name = re.match("scores/(.+)\\.train\\.info\\.txt", fn).group(1)
-        assert setup_name
-        if not match_ref_setup(ref_setup, setup_name, ref_setup_dist=ref_setup_dist):
-            continue
-        train_scores = get_train_scores_by_key(fn, **kwargs)  # list[(score,ep)]
-        for score, ep in train_scores:
-            d.setdefault(ep, []).append((score, setup_name))
-    l = []  # list[(float,)]
-    # TODO not sure if this makes sense ...
-
-
 def main():
     arg_parser = ArgumentParser()
     arg_parser.add_argument("train_scores_file", nargs='*')
@@ -176,7 +189,6 @@ def main():
     arg_parser.add_argument("--prefix")
     arg_parser.add_argument("--ref_setup")
     arg_parser.add_argument("--ref_setup_dist", type=int, default=1)
-    #arg_parser.add_argument("--best_per_epoch", action="store_true")
     args = arg_parser.parse_args()
 
     if args.max_epoch is not None and args.max_epoch < 0:
@@ -197,12 +209,6 @@ def main():
                 epochs = [ep_ for (_, ep_) in scores]
                 print(key, "best:", best_score, "in epoch", ep, "(out of epochs %i-%i)" % (min(epochs), max(epochs)))
             return
-
-    if False:  #args.best_per_epoch:
-        print("# best setups per epoch by score (%s):" % args.key)
-        setups_with_best_score = get_setups_with_best_score_by_epoch(key=args.key, ignore_key=args.ignore_key)
-        pprint(sorted(setups_with_best_score))
-        return
 
     print("# setups sorted by their best score (%s):" % args.key)
     setups_with_best_score = get_setups_with_best_train_score(

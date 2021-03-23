@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Usage:	 	 $python _get_train_setup_dir.py $path/to/experiment.config
+Motivation:  Prints the corresponding path to /data-train/experiment/ only if it exists, otherwise it asserts.
+"""
 
 import faulthandler
 faulthandler.enable()
@@ -25,5 +29,5 @@ config.load_file(configfile)
 model = os.path.splitext(os.path.basename(configfile))[0]
 model_dir = config.value("_train_setup_dir", "data-train/" + model)
 
-assert os.path.exists(model_dir)
+assert os.path.exists(model_dir), "create data-train/%s folder first" %model
 print(model_dir)

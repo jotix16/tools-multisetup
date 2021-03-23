@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-
+# kate: space-indent on; indent-width 4; mixedindent off; indent-mode python;
+"""
+Prints informaion about finished & incomplete running/not-running training and running jobs.
+"""
 import faulthandler
 faulthandler.enable()
 import better_exchook
@@ -67,4 +70,3 @@ for _, s in sorted(recog_setups_eps.items()):
     print("  %s %3i: %s" % (s["name"], s["epoch"], s["jobs_repr"]))
 
 
-# kate: space-indent on; indent-width 4; mixedindent off; indent-mode python;

@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # kate: space-indent on; indent-width 4; mixedindent off; indent-mode python;
+"""
+Collect train setups, which are completed + finished.
+Filter out the N best ones - don't delete anything from them.
+From the remaining, delete all but the best epoch.
+"""
 
 from lib.ui import seriousConfirm
 from lib.utils import human_size
 from tools import *
 import re
 import os
-
-# Collect train setups, which are completed + finished.
-# Filter out the N best ones - don't delete anything from them.
-# From the remaining, delete all but the best epoch.
 
 Skip_N_best = 20
 
