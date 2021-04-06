@@ -78,7 +78,7 @@ for f in [
         "data-train", "tools", "tools-recog",
         "flow", "features", "features.warped",
         "config", "config-train", "dependencies",
-        "sprint-executables"]:
+        "sprint-executables", "data-common"]:
     if os.path.exists("%s/%s" % (mydir, f)):
         os.symlink("base/%s" % f, "%s/%s" % (train_dir, f))
 
