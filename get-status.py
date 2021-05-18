@@ -9,12 +9,11 @@ import better_exchook
 better_exchook.install()
 
 from argparse import ArgumentParser
-from tools import *
+from tools import train_setups, train_setup_finished, train_setup_repr, recog_setups
 
 parser = ArgumentParser()
 parser.add_argument('--alljobs', action='store_true')
 args = parser.parse_args()
-
 
 num_completed_finished = 0
 

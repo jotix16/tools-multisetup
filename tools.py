@@ -97,7 +97,7 @@ def _init():
 _init()
 
 
-from Config import Config
+from Config import Config, set_global_config
 
 
 def get_recog_dirs():
@@ -439,6 +439,7 @@ def train_setup_info_via_config(configfile):
     :rtype: dict[str]
     """
     config = Config()
+    set_global_config(config)
     config.load_file(configfile)
     num_epochs = config.int("num_epochs", 0)
     assert num_epochs > 0, "no num_epochs in %r" % configfile
